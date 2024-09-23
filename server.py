@@ -7,7 +7,6 @@ lock = threading.Lock()
 
 
 
-
 def handle_client(client_socket, address):
     print(f"[NEW CONNECTION] {address} connected.")
 
@@ -17,15 +16,16 @@ def handle_client(client_socket, address):
             #waiting for a recieved message
             message = client_socket.recv(1024).decode('utf-8')
 
+
             #getting exit message
             if message.lower() == "exit":
-                print(f"[DISCONNECT] {address} disconnected.")
 
-                #
+                print(f"[DISCONNECT] {address} disconnected.")
                 with lock:
                     clients.remove(client_socket)
                 client_socket.close()
                 break
+
             else:
                 broadcast(message, client_socket)
         except:
@@ -63,5 +63,7 @@ def start_server():
         thread = threading.Thread(target=handle_client, args=(client_socket, address))
         thread.start()
 
-if __name__ == "__main__":
-    start_server()
+
+start_server()
+
+

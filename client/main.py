@@ -1,29 +1,31 @@
+import socket
 import pygame
-from client import *
+import client
+import json
 
 pygame.init()
 clock = pygame.time.Clock()
 
 sprites = pygame.sprite.Group()
 
-
 screen = pygame.display.set_mode((800, 800))
 screenColor = (100, 100, 100)
 
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, width, height, color):
+    def __init__(self, width, height, color, id):
         super().__init__()
 
         self.image = pygame.Surface((width, height))
         self.rect = self.image.get_rect()
         self.image.fill(color)
 
-        self.pos = "0,0"
+        self.data = {
+            "id": id,
+            "x": self.rect.x,
+            "y": self.rect.y
+        }
 
 
     def update(self):
@@ -40,26 +42,45 @@ class Player(pygame.sprite.Sprite):
 
 
 
+player = Player(32, 32, (255, 255, 255), "client_0")
+sprites.add(player)
 
 
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+client.start_client(client_socket)
+client.send_message(str(player.data), client_socket)
+
+all_messages = client.all_messages
+all_clients = [0]
 
 
-player_one = Player(32, 32, (255, 255, 255))
-sprites.add(player_one)
+print(json.dumps(player.data))
 
+#json.loads(json.dumps(player.data))
+      
+    
 
-
-start_client(client_socket)
-
-send_message("new_client", client_socket)
-
-
-running = True  
+running = True
 while running:
+    
+    
 
+    for c in range(0, len(all_messages)):
+        if c == (len(all_messages)-1):
+
+            if all_messages == "osjnfsksdf":
+
+                all_messages.remove(all_messages[c])
+                sprites.add(Player(32, 32, (255, 0, 0)))
+
+
+            
+    
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            send_message("exit", client_socket)
+            client_socket.close()
             running = False
 
 

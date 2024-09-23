@@ -2,6 +2,9 @@ import socket
 import threading
 
 
+all_messages = []
+all_clients = []
+
 
 def receive_messages(client_socket):
     #while the user is still inputting
@@ -10,8 +13,8 @@ def receive_messages(client_socket):
         try:
             #recieving any input from other clients
             message = client_socket.recv(1024).decode('utf-8')
-            if message:
-                print(f"[MESSAGE] {message}")
+            if message and message != "":
+                all_messages.append(message)
             else:
                 break
         #catching unexpected errors (error also given from exit)
@@ -26,17 +29,17 @@ def start_client(client_socket):
 
     thread = threading.Thread(target=receive_messages, args=(client_socket,))
     thread.start()
-
     
 
 def send_message(message, client_socket):
-                
-        #breaking connection from server
-        if message.lower() == "exit":
-            client_socket.send(message.encode('utf-8'))
-            client_socket.close()
-        #if the message isn't exit, then send it to server
-        else:
-            client_socket.send(message.encode('utf-8'))
+    if message != "":
+        client_socket.send(message.encode('utf-8'))
+
+
+
+
+
+
+
 
 
