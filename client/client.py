@@ -2,7 +2,7 @@ import socket
 import threading
 
 
-all_messages = []
+newest_message = ""
 all_clients = []
 
 
@@ -13,8 +13,8 @@ def receive_messages(client_socket):
         try:
             #recieving any input from other clients
             message = client_socket.recv(1024).decode('utf-8')
-            if message and message != "":
-                all_messages.append(message)
+            if message:
+                newest_message = message
             else:
                 break
         #catching unexpected errors (error also given from exit)
@@ -32,8 +32,7 @@ def start_client(client_socket):
     
 
 def send_message(message, client_socket):
-    if message != "":
-        client_socket.send(message.encode('utf-8'))
+    client_socket.send(message.encode('utf-8'))
 
 
 
