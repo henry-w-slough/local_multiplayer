@@ -2,9 +2,9 @@ import socket
 import threading
 import json
 
-# List to keep track of connected clients
-clients = []
+
 client_socks = []
+all_clients = []
 lock = threading.Lock()
 
 
@@ -27,26 +27,12 @@ def handle_client(client_socket, address):
             if message.lower() == "exit":
                 print(f"[DISCONNECT] {address} disconnected.")
                 break
-            
-            #if a player is sending it's data info
-            if json.loads(message)["id"]:
-                player_data = json.loads(message)
 
-                if player_data["id"] == "":
-                    player_data["id"] = get_new_id()
-
-
-            broadcast(message, client_socket)
-
-                
-                    
-            
-            
 
             
 
-            
-            broadcast(message, client_socket)
+            broadcast(message)
+
 
         except Exception as e:
             print(f"[ERROR] An error occurred with {address}: {e}")
@@ -56,21 +42,29 @@ def handle_client(client_socket, address):
     with lock:
         if client_socket in client_socks:
             client_socks.remove(client_socket)
+
     client_socket.close()
 
 
 
 
-def broadcast(message, client_socket):
+def broadcast(message):
     with lock:
         for client in client_socks:
-            if client != client_socket:
-                try:
-                    client.send(message.encode('utf-8'))
-                except Exception as e:
-                    print(f"[ERROR] Could not send message to {client}: {e}")
-                    client.close()
-                    client_socks.remove(client)
+            try:
+                client.send(message.encode('utf-8'))
+            except Exception as e:  
+                print(f"[ERROR] Could not broadcast message to {client}: {e}")
+                client.close()
+                client_socks.remove(client)
+
+def send_message(message, client_socket):
+    with lock:
+        try:
+            client_socket.send(message)
+        except Exception as e:
+            print(f"[ERROR] Could not send message to {client_socket}: {e}")
+
 
 
 
@@ -87,12 +81,6 @@ def start_server():
             client_socks.append(client_socket)
         thread = threading.Thread(target=handle_client, args=(client_socket, address))
         thread.start()
-
-
-def get_new_id():
-    for socket in range(1, len(client_socks)):
-        if socket == len(client_socks):
-            return socket
 
 
 

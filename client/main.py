@@ -2,6 +2,7 @@ import socket
 import pygame
 import client
 import json
+import uuid
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -22,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.image.fill(color)
 
         self.data = {
-            "id": "",
+            "id": str(uuid.uuid4()),
             "x": self.rect.x,
             "y": self.rect.y
         }
@@ -31,31 +32,22 @@ class Player(pygame.sprite.Sprite):
 
 sprites.add(Player(32, 32, (255, 255, 255)))
 
+player = sprites.sprites()[0]
+
 
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 client.start_client(client_socket)
 
-      
-    
+all_messages = client.all_messages
+
+
+
 
 running = True
 while running:
-    client.send_message(json.dumps(sprites.sprites()[0].data), client_socket)
+    client.send_message(json.dumps(player.data), client_socket)
 
-    print(client.newest_message)
-    
-    
-    if client.newest_message != "":
-        incoming_data = json.loads(client.newest_message)
-
-        if incoming_data["id"] == sprites.sprites()[sprites.__len__()+1]:
-            print("likjdfns")
-            sprites.add(Player(32, 32, (255, 255, 255)))
-        else:
-            sprites.sprites()[incoming_data["id"]].rect.x = incoming_data["x"]
-            sprites.sprites()[incoming_data["id"]].rect.y = incoming_data["y"]
                 
             
 
@@ -67,13 +59,17 @@ while running:
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_w]:
-        sprites.sprites()[0].rect.y -= 5
+        player.rect.y -= 5
     if keys[pygame.K_s]:
-        sprites.sprites()[0].rect.y += 5
+        player.rect.y += 5
     if keys[pygame.K_a]:
-        sprites.sprites()[0].rect.x -= 5
+        player.rect.x -= 5
     if keys[pygame.K_d]:
-        sprites.sprites()[0].rect.x += 5
+        player.rect.x += 5
+
+    player.data["x"] = player.rect.x
+    player.data["y"] = player.rect.y
+
                 
 
 
