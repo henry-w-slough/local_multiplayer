@@ -28,10 +28,11 @@ def handle_client(client_socket, address):
                 print(f"[DISCONNECT] {address} disconnected.")
                 break
 
+            if json.loads(message)["id"] in all_clients:    
+                broadcast(message)
+            else:
+                all_clients.append(json.loads(message)["id"])
 
-            
-
-            broadcast(message)
 
 
         except Exception as e:

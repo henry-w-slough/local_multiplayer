@@ -8,6 +8,7 @@ pygame.init()
 clock = pygame.time.Clock()
 
 sprites = pygame.sprite.Group()
+all_clients = []
 
 screen = pygame.display.set_mode((800, 800))
 screenColor = (100, 100, 100)
@@ -29,6 +30,13 @@ class Player(pygame.sprite.Sprite):
         }
 
 
+def last_element(list):
+    if len(list) == 0:
+        return 0
+    else:
+        return len(list)-1
+
+
 
 sprites.add(Player(32, 32, (255, 255, 255)))
 
@@ -39,14 +47,38 @@ player = sprites.sprites()[0]
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.start_client(client_socket)
 
-all_messages = client.all_messages
+newest_message = client.newest_message
 
 
 
 
 running = True
 while running:
+    #print(all_clients)
     client.send_message(json.dumps(player.data), client_socket)
+ 
+    print(json.dumps(player.data))
+
+
+
+    #if the outside client is already created
+    if newest_message != "":
+        print("Message")
+        if json.loads(newest_message)["id"] != player.data["id"]:
+            print("DATA: "+newest_message)
+            if json.loads(newest_message)["id"] in all_clients:
+
+                for sprite in sprites:
+                    #iterating over every sprite till the id matches
+                    if sprite.data["id"] == json.loads(newest_message)["id"]:
+                        #changing position
+                        sprite.rect.x = json.loads(newest_message)["x"]
+                        sprite.rect.y = json.loads(newest_message)["y"]
+            elif json.loads(newest_message)["id"] not in all_clients:
+                print("new player")
+                #making new player
+                sprites.add(Player(32, 32, (255, 0, 0)))
+                all_clients.append(sprites.sprites(sprites.__len__()).data["id"])
 
                 
             
@@ -83,6 +115,8 @@ while running:
             running = False
 
 
+
+    #newest_message = ""
 
     sprites.update()
 
